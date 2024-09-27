@@ -1,15 +1,31 @@
 #ifndef TASK_MANAGER_H
 #define TASK_MANAGER_H
 
-#include <vector>
 #include <string>
+#include <vector>
 #include <sqlite3.h>
+
+struct Task {
+    int id;
+    std::string description;
+    std::string deadline;
+    std::string priority;
+    std::string category;
+};
 
 class TaskManager {
 public:
-    static std::vector<std::string> getTasks();
-    static void addTask(const std::string& description);
-    static void deleteTask(int id);  // Add this line to declare the deleteTask function
+    TaskManager(const std::string& db_path);
+    ~TaskManager();
+
+    std::vector<Task> getTasks();
+    bool addTask(const Task& task);
+    bool updateTask(int id, const Task& task);
+    bool deleteTask(int id);
+
+private:
+    sqlite3* db;
+    void initDatabase();
 };
 
-#endif  // TASK_MANAGER_H
+#endif // TASK_MANAGER_H

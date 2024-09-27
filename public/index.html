@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Task Manager</h1>
+    
+    <form id="add-task-form">
+        <input type="text" id="task-description" placeholder="Task description" required>
+        <input type="date" id="task-deadline">
+        <select id="task-priority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+        </select>
+        <input type="text" id="task-category" placeholder="Category">
+        <button type="submit">Add Task</button>
+    </form>
+
+    <div id="task-list">
+        <!-- Tasks will be dynamically inserted here -->
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

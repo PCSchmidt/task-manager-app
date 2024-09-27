@@ -1,0 +1,49 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+#add-task-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#add-task-form input,
+#add-task-form select,
+#add-task-form button {
+    padding: 5px;
+}
+
+#task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.task {
+    border: 1px solid #ccc;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.task-info {
+    flex-grow: 1;
+}
+
+.task-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.priority-low { background-color: #e6ffe6; }
+.priority-medium { background-color: #ffffcc; }
+.priority-high { background-color: #ffe6e6; }

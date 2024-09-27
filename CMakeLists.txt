@@ -1,16 +1,32 @@
 cmake_minimum_required(VERSION 3.10)
-
-# Project name
 project(TaskManagerApp)
 
-# Set the C++ standard
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Add Crow include directories (point to the local 'crow' folder)
-include_directories(${PROJECT_SOURCE_DIR}/crow/include)
+# Find SQLite package
+find_package(SQLite3 REQUIRED)
 
-# Add the executable
-add_executable(TaskManagerApp src/main.cpp src/task_manager.cpp)
+# Add Crow
+add_subdirectory(external/crow)
 
-# Link with SQLite3 and Crow (no need for boost_system if Crow is local)
-target_link_libraries(TaskManagerApp sqlite3)
+# Add source files
+set(SOURCES
+    src/main.cpp
+    src/task_manager.cpp
+)
+
+# Create executable
+add_executable(${PROJECT_NAME} ${SOURCES})
+
+# Link libraries
+target_link_libraries(${PROJECT_NAME} PRIVATE SQLite::SQLite3 Crow::Crow)
+
+# Add compiler flags
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
+
+# Copy public directory to build directory
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/public $<TARGET_FILE_DIR:${PROJECT_NAME}>/public
+)

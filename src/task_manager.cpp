@@ -1,112 +1,119 @@
 #include "task_manager.h"
 #include <iostream>
+#include <stdexcept>
 
-// Function to retrieve tasks from the SQLite database
-std::vector<std::string> TaskManager::getTasks() {
-    sqlite3* db;
-    int rc = sqlite3_open("../db/tasks.db", &db);  // Open the database
-    if (rc) {
-        std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
-        return {};  // Return an empty list in case of failure
-    } else {
-        std::cout << "Database opened successfully (for getting tasks)" << std::endl;
+TaskManager::TaskManager(const std::string& db_path) {
+    std::cout << "Opening database at: " << db_path << std::endl;
+    if (sqlite3_open(db_path.c_str(), &db) != SQLITE_OK) {
+        throw std::runtime_error("Failed to open database");
     }
+    initDatabase();
+}
 
-    std::vector<std::string> tasks;
+TaskManager::~TaskManager() {
+    sqlite3_close(db);
+}
+
+void TaskManager::initDatabase() {
+    const char* sql = "CREATE TABLE IF NOT EXISTS tasks ("
+                      "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                      "description TEXT NOT NULL,"
+                      "deadline TEXT,"
+                      "priority TEXT,"
+                      "category TEXT"
+                      ");";
+    char* errMsg = nullptr;
+    if (sqlite3_exec(db, sql, nullptr, nullptr, &errMsg) != SQLITE_OK) {
+        std::string error = "SQL error: ";
+        error += errMsg;
+        sqlite3_free(errMsg);
+        throw std::runtime_error(error);
+    }
+    std::cout << "Database initialized successfully" << std::endl;
+}
+
+std::vector<Task> TaskManager::getTasks() {
+    std::vector<Task> tasks;
+    const char* sql = "SELECT id, description, deadline, priority, category FROM tasks;";
     sqlite3_stmt* stmt;
 
-    const char* sql = "SELECT description FROM tasks";  // SQL query to fetch task descriptions
-    sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    std::cout << "Executing SQL: " << sql << std::endl;
 
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
-        std::string task = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
-        tasks.push_back(task);
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error("Failed to prepare statement");
     }
 
-    sqlite3_finalize(stmt);  // Clean up the statement
-    sqlite3_close(db);  // Close the database
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        Task task;
+        task.id = sqlite3_column_int(stmt, 0);
+        task.description = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        task.deadline = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+        task.priority = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+        task.category = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+        tasks.push_back(task);
+        std::cout << "Retrieved task: " << task.id << " - " << task.description << std::endl;
+    }
 
+    sqlite3_finalize(stmt);
+    std::cout << "Retrieved " << tasks.size() << " tasks" << std::endl;
     return tasks;
 }
 
-// Function to add a task to the SQLite database
-void TaskManager::addTask(const std::string& description) {
-    sqlite3* db;
-    int rc = sqlite3_open("../db/tasks.db", &db);  // Open the database
-    if (rc) {
-        std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
-        return;
-    } else {
-        std::cout << "Database opened successfully (for adding task)" << std::endl;
-    }
-
+bool TaskManager::addTask(const Task& task) {
+    const char* sql = "INSERT INTO tasks (description, deadline, priority, category) VALUES (?, ?, ?, ?);";
     sqlite3_stmt* stmt;
-    const char* sql = "INSERT INTO tasks (description) VALUES (?)";  // SQL query to insert a new task
 
-    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);  // Prepare the SQL statement
-    if (rc != SQLITE_OK) {
-        std::cerr << "Failed to prepare statement: " << sqlite3_errmsg(db) << std::endl;
-        sqlite3_close(db);
-        return;
-    } else {
-        std::cout << "SQL statement prepared successfully" << std::endl;
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        return false;
     }
 
-    rc = sqlite3_bind_text(stmt, 1, description.c_str(), -1, SQLITE_STATIC);  // Bind the task description
-    if (rc != SQLITE_OK) {
-        std::cerr << "Failed to bind text: " << sqlite3_errmsg(db) << std::endl;
-    } else {
-        std::cout << "Description bound successfully" << std::endl;
-    }
+    sqlite3_bind_text(stmt, 1, task.description.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, task.deadline.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, task.priority.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, task.category.c_str(), -1, SQLITE_STATIC);
 
-    rc = sqlite3_step(stmt);  // Execute the statement
-    if (rc != SQLITE_DONE) {
-        std::cerr << "Execution failed: " << sqlite3_errmsg(db) << std::endl;
+    bool result = sqlite3_step(stmt) == SQLITE_DONE;
+    sqlite3_finalize(stmt);
+    
+    if (result) {
+        std::cout << "Task added successfully" << std::endl;
     } else {
-        std::cout << "Task added successfully!" << std::endl;
+        std::cout << "Failed to add task" << std::endl;
     }
-
-    sqlite3_finalize(stmt);  // Clean up
-    sqlite3_close(db);  // Close the database
+    
+    return result;
 }
 
-// Function to delete a task by its ID
-void TaskManager::deleteTask(int id) {
-    sqlite3* db;
-    int rc = sqlite3_open("../db/tasks.db", &db);  // Open the database
-    if (rc) {
-        std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
-        return;
-    } else {
-        std::cout << "Database opened successfully (for deleting task)" << std::endl;
-    }
-
+bool TaskManager::updateTask(int id, const Task& task) {
+    const char* sql = "UPDATE tasks SET description = ?, deadline = ?, priority = ?, category = ? WHERE id = ?;";
     sqlite3_stmt* stmt;
-    const char* sql = "DELETE FROM tasks WHERE id = ?";  // SQL query to delete a task by its ID
 
-    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);  // Prepare the SQL statement
-    if (rc != SQLITE_OK) {
-        std::cerr << "Failed to prepare statement: " << sqlite3_errmsg(db) << std::endl;
-        sqlite3_close(db);
-        return;
-    } else {
-        std::cout << "SQL statement prepared successfully" << std::endl;
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        return false;
     }
 
-    rc = sqlite3_bind_int(stmt, 1, id);  // Bind the task ID to the query
-    if (rc != SQLITE_OK) {
-        std::cerr << "Failed to bind ID: " << sqlite3_errmsg(db) << std::endl;
-    } else {
-        std::cout << "Task ID bound successfully" << std::endl;
+    sqlite3_bind_text(stmt, 1, task.description.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, task.deadline.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, task.priority.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, task.category.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 5, id);
+
+    bool result = sqlite3_step(stmt) == SQLITE_DONE;
+    sqlite3_finalize(stmt);
+    return result;
+}
+
+bool TaskManager::deleteTask(int id) {
+    const char* sql = "DELETE FROM tasks WHERE id = ?;";
+    sqlite3_stmt* stmt;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        return false;
     }
 
-    rc = sqlite3_step(stmt);  // Execute the statement
-    if (rc != SQLITE_DONE) {
-        std::cerr << "Execution failed: " << sqlite3_errmsg(db) << std::endl;
-    } else {
-        std::cout << "Task deleted successfully!" << std::endl;
-    }
+    sqlite3_bind_int(stmt, 1, id);
 
-    sqlite3_finalize(stmt);  // Clean up
-    sqlite3_close(db);  // Close the database
+    bool result = sqlite3_step(stmt) == SQLITE_DONE;
+    sqlite3_finalize(stmt);
+    return result;
 }

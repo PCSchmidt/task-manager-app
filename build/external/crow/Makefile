@@ -68,7 +68,7 @@ CMAKE_BINARY_DIR = /home/chris/ProjectFolder/TaskManagerApp/build
 # Special rule for the target package
 package: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Run CPack packaging tool..."
-	/usr/bin/cpack --config ./CPackConfig.cmake
+	cd /home/chris/ProjectFolder/TaskManagerApp/build && /usr/bin/cpack --config ./CPackConfig.cmake
 .PHONY : package
 
 # Special rule for the target package
@@ -78,7 +78,7 @@ package/fast: package
 # Special rule for the target package_source
 package_source:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Run CPack packaging tool for source..."
-	/usr/bin/cpack --config ./CPackSourceConfig.cmake /home/chris/ProjectFolder/TaskManagerApp/build/CPackSourceConfig.cmake
+	cd /home/chris/ProjectFolder/TaskManagerApp/build && /usr/bin/cpack --config ./CPackSourceConfig.cmake /home/chris/ProjectFolder/TaskManagerApp/build/CPackSourceConfig.cmake
 .PHONY : package_source
 
 # Special rule for the target package_source
@@ -152,14 +152,14 @@ install/strip/fast: preinstall/fast
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/chris/ProjectFolder/TaskManagerApp/build/CMakeFiles /home/chris/ProjectFolder/TaskManagerApp/build//CMakeFiles/progress.marks
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
+	cd /home/chris/ProjectFolder/TaskManagerApp/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/chris/ProjectFolder/TaskManagerApp/build/CMakeFiles /home/chris/ProjectFolder/TaskManagerApp/build/external/crow//CMakeFiles/progress.marks
+	cd /home/chris/ProjectFolder/TaskManagerApp/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 external/crow/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/chris/ProjectFolder/TaskManagerApp/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 clean
+	cd /home/chris/ProjectFolder/TaskManagerApp/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 external/crow/clean
 .PHONY : clean
 
 # The main clean target
@@ -168,92 +168,32 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 preinstall
+	cd /home/chris/ProjectFolder/TaskManagerApp/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 external/crow/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 preinstall
+	cd /home/chris/ProjectFolder/TaskManagerApp/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 external/crow/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/chris/ProjectFolder/TaskManagerApp/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-#=============================================================================
-# Target rules for targets named TaskManagerApp
+# Convenience name for target.
+external/crow/CMakeFiles/uninstall.dir/rule:
+	cd /home/chris/ProjectFolder/TaskManagerApp/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 external/crow/CMakeFiles/uninstall.dir/rule
+.PHONY : external/crow/CMakeFiles/uninstall.dir/rule
 
-# Build rule for target.
-TaskManagerApp: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 TaskManagerApp
-.PHONY : TaskManagerApp
-
-# fast build rule for target.
-TaskManagerApp/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TaskManagerApp.dir/build.make CMakeFiles/TaskManagerApp.dir/build
-.PHONY : TaskManagerApp/fast
-
-#=============================================================================
-# Target rules for targets named uninstall
-
-# Build rule for target.
-uninstall: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 uninstall
+# Convenience name for target.
+uninstall: external/crow/CMakeFiles/uninstall.dir/rule
 .PHONY : uninstall
 
 # fast build rule for target.
 uninstall/fast:
-	$(MAKE) $(MAKESILENT) -f external/crow/CMakeFiles/uninstall.dir/build.make external/crow/CMakeFiles/uninstall.dir/build
+	cd /home/chris/ProjectFolder/TaskManagerApp/build && $(MAKE) $(MAKESILENT) -f external/crow/CMakeFiles/uninstall.dir/build.make external/crow/CMakeFiles/uninstall.dir/build
 .PHONY : uninstall/fast
-
-src/main.o: src/main.cpp.o
-.PHONY : src/main.o
-
-# target to build an object file
-src/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TaskManagerApp.dir/build.make CMakeFiles/TaskManagerApp.dir/src/main.cpp.o
-.PHONY : src/main.cpp.o
-
-src/main.i: src/main.cpp.i
-.PHONY : src/main.i
-
-# target to preprocess a source file
-src/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TaskManagerApp.dir/build.make CMakeFiles/TaskManagerApp.dir/src/main.cpp.i
-.PHONY : src/main.cpp.i
-
-src/main.s: src/main.cpp.s
-.PHONY : src/main.s
-
-# target to generate assembly for a file
-src/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TaskManagerApp.dir/build.make CMakeFiles/TaskManagerApp.dir/src/main.cpp.s
-.PHONY : src/main.cpp.s
-
-src/task_manager.o: src/task_manager.cpp.o
-.PHONY : src/task_manager.o
-
-# target to build an object file
-src/task_manager.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TaskManagerApp.dir/build.make CMakeFiles/TaskManagerApp.dir/src/task_manager.cpp.o
-.PHONY : src/task_manager.cpp.o
-
-src/task_manager.i: src/task_manager.cpp.i
-.PHONY : src/task_manager.i
-
-# target to preprocess a source file
-src/task_manager.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TaskManagerApp.dir/build.make CMakeFiles/TaskManagerApp.dir/src/task_manager.cpp.i
-.PHONY : src/task_manager.cpp.i
-
-src/task_manager.s: src/task_manager.cpp.s
-.PHONY : src/task_manager.s
-
-# target to generate assembly for a file
-src/task_manager.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TaskManagerApp.dir/build.make CMakeFiles/TaskManagerApp.dir/src/task_manager.cpp.s
-.PHONY : src/task_manager.cpp.s
 
 # Help Target
 help:
@@ -270,13 +210,6 @@ help:
 	@echo "... package_source"
 	@echo "... rebuild_cache"
 	@echo "... uninstall"
-	@echo "... TaskManagerApp"
-	@echo "... src/main.o"
-	@echo "... src/main.i"
-	@echo "... src/main.s"
-	@echo "... src/task_manager.o"
-	@echo "... src/task_manager.i"
-	@echo "... src/task_manager.s"
 .PHONY : help
 
 
@@ -288,6 +221,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/chris/ProjectFolder/TaskManagerApp/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
